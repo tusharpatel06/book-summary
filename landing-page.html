@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marginalia — Book summaries, written for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10131a;
+    --bg-alt: #171c26;
+    --paper: #f1e7d2;
+    --paper-dim: #cabf9f;
+    --gold: #c9a227;
+    --gold-bright: #e0bc45;
+    --cover: #7c2530;
+    --cover-dark: #551a22;
+    --cover-light: #9a3340;
+    --text-primary: #f1e7d2;
+    --text-secondary: #9a9384;
+    --text-faint: #5f5c53;
+    --line: rgba(241,231,210,0.12);
+    --success: #7a9d6f;
+
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a{ color: inherit; }
+  ::selection{ background: var(--gold); color: var(--bg); }
+
+  .noise{
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    opacity: 0.035; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at 50% 0%, transparent 40%, rgba(0,0,0,0.35) 100%);
+  }
+
+  header{
+    position: relative; z-index: 5;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 28px 6vw 0;
+  }
+  .logo{
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo .mark{ color: var(--gold); font-style: italic; }
+  .nav-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* ---------- GATE (email-first) ---------- */
+  .gate{
+    position: relative; z-index: 3;
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: center;
+    gap: 40px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 64px 6vw 40px;
+    min-height: 78vh;
+    transition: opacity .5s ease, filter .5s ease;
+  }
+  .gate.hidden{
+    display:none;
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom: 22px;
+  }
+  .eyebrow::before{ content:''; width:26px; height:1px; background: var(--gold); }
+  h1{
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.6rem, 4.6vw, 4.1rem);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    margin: 0 0 22px;
+  }
+  h1 em{ font-style: italic; font-weight: 500; color: var(--gold-bright); }
+  .lede{
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    max-width: 460px;
+    margin: 0 0 36px;
+  }
+
+  .gate-form{ max-width: 460px; }
+  .input-row{
+    display:flex; gap:0;
+    border-bottom: 1.5px solid var(--paper-dim);
+    padding-bottom: 4px;
+    transition: border-color .25s ease;
+  }
+  .input-row:focus-within{ border-color: var(--gold); }
+  .input-row input{
+    flex:1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 16px;
+    padding: 13px 4px;
+  }
+  .input-row input::placeholder{ color: var(--text-faint); }
+  .btn{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: #1a1508;
+    border: none;
+    padding: 15px 26px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s ease, transform .15s ease;
+  }
+  .btn:hover{ background: var(--gold-bright); transform: translateY(-1px); }
+  .btn:active{ transform: translateY(0); }
+  .btn:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; }
+
+  .form-hint{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 12px;
+    letter-spacing: 0.02em;
+  }
+  .gate-error{
+    display:none;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: #c96a4a;
+    margin-top: 10px;
+  }
+  .gate-error.show{ display:block; }
+
+  .gate-steps{
+    display:flex; gap: 28px; margin-top: 46px;
+  }
+  .gate-step{ display:flex; align-items:baseline; gap:8px; }
+  .gate-step-num{ font-family: var(--font-mono); font-size: 11px; color: var(--gold); }
+  .gate-step-label{ font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.03em; }
+
+  /* ---------- 3D BOOK ---------- */
+  .book-stage{
+    position: relative;
+    height: 480px;
+    perspective: 1800px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .book{
+    position: relative;
+    width: 240px;
+    height: 340px;
+    transform-style: preserve-3d;
+    transform: rotateX(8deg) rotateY(-32deg);
+    animation: float 6s ease-in-out infinite;
+    cursor: grab;
+  }
+  @keyframes float{
+    0%, 100%{ transform: rotateX(8deg) rotateY(-32deg) translateY(0px); }
+    50%{ transform: rotateX(8deg) rotateY(-32deg) translateY(-14px); }
+  }
+  .book.opened{ animation: none; }
+  .book-part{ position:absolute; top:0; left:0; width:100%; height:100%; }
+  .cover-front{
+    background: linear-gradient(135deg, var(--cover-light) 0%, var(--cover) 45%, var(--cover-dark) 100%);
+    transform: translateZ(18px);
+    border-radius: 1px 4px 4px 1px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.7);
+    transition: transform 1.1s cubic-bezier(.6,.1,.2,1);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .book.opened .cover-front{ transform: translateZ(18px) rotateY(-150deg); }
+  .cover-front::before{ content:''; position:absolute; inset: 14px; border: 1px solid rgba(201,162,39,0.55); }
+  .cover-title{
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--gold);
+    font-size: 15px;
+    text-align:center;
+    padding: 0 28px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+  .pages{
+    background: linear-gradient(90deg, #e9dfc7, var(--paper) 40%, #e9dfc7 100%);
+    transform: translateZ(15px);
+    border-radius: 1px 3px 3px 1px;
+  }
+  .pages::after{
+    content:''; position:absolute; right:0; top:2%; height:96%; width:6px;
+    background: repeating-linear-gradient(180deg, #cabf9f 0px, #cabf9f 1px, #e9dfc7 1px, #e9dfc7 2px);
+    opacity: 0.7;
+  }
+  .spine{
+    width: 36px; height: 340px; left: -18px;
+    background: linear-gradient(90deg, var(--cover-dark), var(--cover));
+    transform: rotateY(90deg) translateZ(18px);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+  }
+  .back-cover{ background: var(--cover-dark); transform: translateZ(-4px); }
+  .page-leaf{
+    background: var(--paper);
+    transform-origin: left center;
+    border-radius: 1px 3px 3px 1px;
+    box-shadow: 1px 0 3px rgba(0,0,0,0.15);
+  }
+  .page-leaf::after{
+    content: ''; position: absolute; inset: 26px 20px;
+    background-image: repeating-linear-gradient(180deg, var(--text-faint) 0, var(--text-faint) 1.5px, transparent 1.5px, transparent 11px);
+    opacity: 0.35;
+  }
+  .stage-caption{
+    position:absolute; bottom: -6px; left:50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-faint); text-align: center; width: 260px;
+  }
+
+  /* ---------- UNLOCKED EXPERIENCE ---------- */
+  .experience{
+    display:none;
+    position: relative; z-index: 3;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 64px 6vw 20px;
+  }
+  .experience.show{ display:block; }
+
+  .welcome-line{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--success);
+    letter-spacing: 0.05em;
+    margin-bottom: 30px;
+  }
+
+  .exp-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 40px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .exp-copy h2{
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 3.2vw, 2.7rem);
+    line-height: 1.1;
+    margin: 0 0 18px;
+  }
+  .exp-copy h2 em{ font-style: italic; color: var(--gold-bright); }
+  .exp-copy p{
+    color: var(--text-secondary);
+    font-size: 15.5px;
+    line-height: 1.6;
+    max-width: 440px;
+    margin: 0 0 30px;
+  }
+
+  /* ---------- CHECKLIST ---------- */
+  .section{
+    position: relative; z-index: 3;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 70px 6vw;
+    border-top: 1px solid var(--line);
+  }
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap: 24px; margin-bottom: 40px; flex-wrap: wrap;
+  }
+  .section-title{
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    font-weight: 500; margin: 0;
+  }
+  .section-sub{
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--text-faint); letter-spacing: 0.04em; max-width: 300px;
+  }
+  .checklist{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .chip{
+    position:relative; border: 1px solid var(--line);
+    padding: 20px 20px 18px; cursor: pointer;
+    transition: border-color .2s ease, background .2s ease;
+    user-select: none;
+  }
+  .chip:hover{ border-color: var(--paper-dim); }
+  .chip.active{ border-color: var(--gold); background: rgba(201,162,39,0.06); }
+  .chip-check{
+    width: 16px; height:16px; border: 1px solid var(--paper-dim);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-bottom: 14px; transition: all .2s ease;
+  }
+  .chip.active .chip-check{ background: var(--gold); border-color: var(--gold); }
+  .chip.active .chip-check::after{ content:'✓'; font-size: 11px; color: #1a1508; font-weight: 600; }
+  .chip-label{ font-family: var(--font-body); font-weight: 500; font-size: 14.5px; display:block; margin-bottom: 4px; }
+  .chip-desc{ font-size: 12.5px; color: var(--text-faint); line-height: 1.5; }
+  .chip.custom{ border-style: dashed; }
+  .chip-remove{
+    position:absolute; top:14px; right:14px; font-family: var(--font-mono);
+    font-size: 14px; color: var(--text-faint); line-height: 1; cursor:pointer;
+  }
+  .chip-remove:hover{ color: var(--gold-bright); }
+
+  .add-own{
+    display:flex; gap: 0; border-bottom: 1.5px solid var(--paper-dim);
+    padding-bottom: 4px; max-width: 520px; transition: border-color .25s ease;
+  }
+  .add-own:focus-within{ border-color: var(--gold); }
+  .add-own input{
+    flex:1; background: transparent; border:none; outline:none;
+    color: var(--text-primary); font-family: var(--font-body); font-size: 14.5px; padding: 12px 4px;
+  }
+  .add-own input::placeholder{ color: var(--text-faint); }
+  .add-own-hint{
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-faint);
+    margin-top: 10px; letter-spacing: 0.02em;
+  }
+
+  .submit-row{
+    margin-top: 40px; display:flex; align-items:center; gap: 18px; flex-wrap: wrap;
+  }
+  .submit-success{
+    display:none; font-family: var(--font-mono); font-size: 12.5px; color: var(--success);
+  }
+  .submit-success.show{ display:inline-block; }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .steps{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .step{ position:relative; padding-top: 20px; border-top: 1px solid var(--line); }
+  .step-num{ font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--gold); display:block; margin-bottom: 14px; }
+  .step-title{ font-weight: 600; font-size: 15.5px; margin-bottom: 8px; }
+  .step-desc{ font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+
+  footer{
+    text-align:center; padding: 40px 6vw 50px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-faint);
+    border-top: 1px solid var(--line); letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 860px){
+    .gate{ grid-template-columns: 1fr; padding-top: 40px; }
+    .exp-grid{ grid-template-columns: 1fr; }
+    .book-stage{ order: -1; height: 340px; }
+    .book{ width: 190px; height: 270px; }
+    .spine{ height: 270px; }
+    .checklist{ grid-template-columns: 1fr 1fr; }
+    .steps{ grid-template-columns: 1fr; gap: 26px; }
+    .input-row{ flex-direction: column; align-items: stretch; }
+    .input-row .btn{ margin-top: 14px; }
+  }
+  @media (max-width: 520px){ .checklist{ grid-template-columns: 1fr; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .book{ animation: none; }
+    .cover-front{ transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="vignette"></div>
+
+<header>
+  <div class="logo"><span class="mark">M</span>arginalia</div>
+  <div class="nav-eyebrow">Personalized book summaries</div>
+</header>
+
+<!-- GATE: email required before anything else -->
+<section class="gate" id="gateSection">
+  <div class="gate-copy">
+    <div class="eyebrow">Not a summary. Your summary.</div>
+    <h1>Read the parts of the book that are actually <em>for you.</em></h1>
+    <p class="lede">
+      Give us your email and we'll unlock the builder — pick a book, tell us what you're
+      working toward, and choose exactly what goes into your summary.
+    </p>
+
+    <div class="gate-form">
+      <div class="input-row">
+        <input type="email" id="gateEmail" placeholder="you@email.com" />
+        <button class="btn" id="gateBtn">Unlock my summary</button>
+      </div>
+      <div class="gate-error" id="gateError">Enter a valid email to continue.</div>
+      <div class="form-hint">No spam — just your personalized summary and the occasional update.</div>
+    </div>
+
+    <div class="gate-steps">
+      <div class="gate-step"><span class="gate-step-num">01</span><span class="gate-step-label">Email</span></div>
+      <div class="gate-step"><span class="gate-step-num">02</span><span class="gate-step-label">Book + goal</span></div>
+      <div class="gate-step"><span class="gate-step-num">03</span><span class="gate-step-label">Your checklist</span></div>
+    </div>
+  </div>
+
+  <div class="book-stage">
+    <div class="book" id="lockedBook">
+      <div class="book-part back-cover"></div>
+      <div class="book-part page-leaf" style="transform: translateZ(2px) rotateY(0deg);"></div>
+      <div class="book-part page-leaf" style="transform: translateZ(6px) rotateY(0deg);"></div>
+      <div class="book-part page-leaf" style="transform: translateZ(10px) rotateY(0deg);"></div>
+      <div class="book-part pages"></div>
+      <div class="book-part spine"></div>
+      <div class="book-part cover-front">
+        <div class="cover-title">enter your email<br>to unlock</div>
+      </div>
+    </div>
+    <div class="stage-caption">the book opens after step 01</div>
+  </div>
+</section>
+
+<!-- EXPERIENCE: revealed only after email is submitted -->
+<section class="experience" id="experienceSection">
+  <div class="welcome-line" id="welcomeLine">✓ You're in. Let's build your summary.</div>
+
+  <div class="exp-grid">
+    <div class="exp-copy">
+      <h2>Now — what are you <em>reading next?</em></h2>
+      <p>Type a book you've been meaning to get to. Watch it appear on the cover — that's the one we'll personalize for you.</p>
+      <div class="input-row">
+        <input type="text" id="bookInput" placeholder="Type a book you've been meaning to read…" />
+        <button class="btn" id="revealBtn">Open the book</button>
+      </div>
+      <div class="form-hint">We'll hand-write this one ourselves while we build the real thing.</div>
+    </div>
+
+    <div class="book-stage">
+      <div class="book" id="theBook">
+        <div class="book-part back-cover"></div>
+        <div class="book-part page-leaf" style="transform: translateZ(2px) rotateY(0deg);"></div>
+        <div class="book-part page-leaf" style="transform: translateZ(6px) rotateY(0deg);"></div>
+        <div class="book-part page-leaf" style="transform: translateZ(10px) rotateY(0deg);"></div>
+        <div class="book-part pages"></div>
+        <div class="book-part spine"></div>
+        <div class="book-part cover-front">
+          <div class="cover-title">whatever you're<br>reading next</div>
+        </div>
+      </div>
+      <div class="stage-caption">click the book</div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top: 20px; border-top: none;">
+    <div class="section-head">
+      <h2 class="section-title">Choose what goes inside</h2>
+      <div class="section-sub">Pick from the shelf, or add your own — type anything you want included and hit enter.</div>
+    </div>
+    <div class="checklist" id="checklist">
+      <div class="chip active" data-key="author">
+        <span class="chip-check"></span>
+        <span class="chip-label">The author's life</span>
+        <span class="chip-desc">Who they were and why they were positioned to write this.</span>
+      </div>
+      <div class="chip active" data-key="story">
+        <span class="chip-check"></span>
+        <span class="chip-label">The core story</span>
+        <span class="chip-desc">The narrative arc, in order, without the padding.</span>
+      </div>
+      <div class="chip" data-key="examples">
+        <span class="chip-check"></span>
+        <span class="chip-label">Real examples</span>
+        <span class="chip-desc">The case studies and anecdotes worth remembering.</span>
+      </div>
+      <div class="chip active" data-key="takeaways">
+        <span class="chip-check"></span>
+        <span class="chip-label">Key takeaways</span>
+        <span class="chip-desc">The ideas distilled to what you'd actually repeat to someone.</span>
+      </div>
+      <div class="chip" data-key="quotes">
+        <span class="chip-check"></span>
+        <span class="chip-label">Quotes worth keeping</span>
+        <span class="chip-desc">Lines worth underlining, pulled out for you.</span>
+      </div>
+      <div class="chip" data-key="action">
+        <span class="chip-check"></span>
+        <span class="chip-label">Action steps</span>
+        <span class="chip-desc">What to actually do differently, given your goal.</span>
+      </div>
+    </div>
+
+    <div class="add-own">
+      <input type="text" id="customChecklistInput" placeholder="Want something specific? Type it and press Enter — e.g. &quot;how this applies to running a team&quot;" />
+    </div>
+    <div class="add-own-hint">Your own checklist item gets added above, already checked.</div>
+
+    <div class="submit-row">
+      <button class="btn" id="submitPicks">Save my picks</button>
+      <span class="submit-success" id="submitSuccess">✓ Saved. We'll build your summary around this.</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2 class="section-title">How it works</h2>
+      <div class="section-sub"></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">01</span>
+        <div class="step-title">Tell us the book and your goal</div>
+        <div class="step-desc">Type a title. Tell us what you're working toward — student, founder, career switch, whatever it is.</div>
+      </div>
+      <div class="step">
+        <span class="step-num">02</span>
+        <div class="step-title">Pick what belongs inside</div>
+        <div class="step-desc">Author's life, story, examples, quotes, action steps — or type your own.</div>
+      </div>
+      <div class="step">
+        <span class="step-num">03</span>
+        <div class="step-title">Get a summary made for you</div>
+        <div class="step-desc">Not the same summary everyone else gets. Yours, shaped by what you asked for.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Marginalia — a small experiment in reading less and remembering more.
+</footer>
+
+<script>
+  // ---- Gate: email required first ----
+  const gateSection = document.getElementById('gateSection');
+  const experienceSection = document.getElementById('experienceSection');
+  const gateEmail = document.getElementById('gateEmail');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateError = document.getElementById('gateError');
+  const lockedBook = document.getElementById('lockedBook');
+
+  let capturedEmail = null;
+
+  function isValidEmail(v){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+
+  function unlock(){
+    const val = gateEmail.value.trim();
+    if(!isValidEmail(val)){
+      gateError.classList.add('show');
+      return;
+    }
+    gateError.classList.remove('show');
+    capturedEmail = val;
+    console.log('Email captured:', capturedEmail);
+
+    lockedBook.classList.add('opened');
+    setTimeout(() => {
+      gateSection.classList.add('hidden');
+      experienceSection.classList.add('show');
+      experienceSection.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 500);
+  }
+
+  gateBtn.addEventListener('click', unlock);
+  gateEmail.addEventListener('keydown', (e) => { if(e.key === 'Enter') unlock(); });
+
+  // ---- Book stage (post-unlock) ----
+  const book = document.getElementById('theBook');
+  const bookInput = document.getElementById('bookInput');
+  const revealBtn = document.getElementById('revealBtn');
+  const coverTitle = document.querySelector('#theBook .cover-title');
+
+  let opened = false;
+  function toggleBook(){
+    opened = !opened;
+    book.classList.toggle('opened', opened);
+  }
+  book.addEventListener('click', toggleBook);
+
+  bookInput.addEventListener('input', () => {
+    const val = bookInput.value.trim();
+    coverTitle.textContent = val ? val : 'whatever you\'re\nreading next';
+  });
+
+  revealBtn.addEventListener('click', () => {
+    if(!opened){ toggleBook(); }
+    document.getElementById('checklist').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  // ---- Checklist: preset toggle + custom add ----
+  const checklist = document.getElementById('checklist');
+  checklist.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    if(e.target.classList.contains('chip-remove')){
+      chip.remove();
+      return;
+    }
+    chip.classList.toggle('active');
+  });
+
+  const customChecklistInput = document.getElementById('customChecklistInput');
+  customChecklistInput.addEventListener('keydown', (e) => {
+    if(e.key !== 'Enter') return;
+    const val = customChecklistInput.value.trim();
+    if(!val) return;
+    const chip = document.createElement('div');
+    chip.className = 'chip active custom';
+    chip.dataset.key = 'custom-' + Date.now();
+    chip.innerHTML = `
+      <span class="chip-remove">×</span>
+      <span class="chip-check"></span>
+      <span class="chip-label">${val}</span>
+      <span class="chip-desc">Added by you.</span>
+    `;
+    checklist.appendChild(chip);
+    customChecklistInput.value = '';
+  });
+
+  // ---- Save picks ----
+  const submitPicks = document.getElementById('submitPicks');
+  const submitSuccess = document.getElementById('submitSuccess');
+  submitPicks.addEventListener('click', () => {
+    const selected = Array.from(document.querySelectorAll('.chip.active')).map(c => c.querySelector('.chip-label').textContent);
+    console.log('Picks saved:', {
+      email: capturedEmail,
+      book: bookInput.value.trim() || null,
+      preferences: selected
+    });
+    submitSuccess.classList.add('show');
+  });
+</script>
+
+</body>
+</html>
